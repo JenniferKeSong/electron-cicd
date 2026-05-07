@@ -1,42 +1,48 @@
 name: Manual Build Windows EXE
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # 只手动触发构建
 
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
+      # 1. 拉取源码
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4   # 升级到 v4，支持 Node.js 24
 
+      # 2. 安装 Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4   # 升级到 v4，支持 Node.js 24
         with:
           node-version: 18
 
+      # 3. 安装 Python（用于 node-gyp）
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5   # 升级到 v5，支持 Node.js 24
         with:
           python-version: '3.10'
 
+      # 4. 配置 npm 使用 Python 和 VS 编译器
       - name: Configure npm for node-gyp
         run: |
           npm config set python python3
           npm config set msvs_version 2022
 
+      # 5. 安装依赖
       - name: Install dependencies
         run: npm ci
 
+      # 6. 执行你的构建流程（先 build，再 build-w）
       - name: Build all assets
         run: npm run build
 
       - name: Build Windows EXE
         run: npm run build-w
 
-      # 新版本 v4 上传构建产物
+      # 7. 上传构建产物到 GitHub Actions Artifacts
       - name: Upload Windows EXE
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4   # 升级到 v4，支持 Node.js 24
         with:
           name: windows-exe
-          path: dist/**
+          path: out/**   # 根据你的输出路径修改
