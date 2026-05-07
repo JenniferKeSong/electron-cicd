@@ -1,0 +1,38 @@
+{
+  "productName": "demo",
+  "appId": "com.electron.Demo",
+  "copyright": "© 2025 Jennifer Technology Co., Ltd.",
+  "directories": {
+    "output": "out"
+  },
+  "asar": true,
+  "files": [
+    "**/*",
+    "!cmd/",
+    "!data/",
+    "!electron/",
+    "!frontend/",
+    "!logs/",
+    "!out/",
+    "!go/",
+    "!python/"
+  ],
+  "extraResources": [
+    {
+      "from": "build/extraResources",
+      "to": "extraResources"
+    }
+  ],
+  "publish": [
+    {
+      "provider": "generic",
+      "url": ""
+    }
+  ],
+  "mac": {
+    "icon": "build/icons/demo/icon.ico",
+    "artifactName": "${productName}-${os}-${version}-${arch}.${ext}",
+    "darkModeSupport": true,
+    "hardenedRuntime": false
+  }
+}
