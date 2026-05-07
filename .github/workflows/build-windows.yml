@@ -6,6 +6,10 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    env:   # 设置 node-gyp 环境变量，避免 npm config 报错
+      npm_config_python: python3      # 指定 python 路径
+      npm_config_msvs_version: 2022   # 指定 MSVC 版本
+
     steps:
       # 1. 拉取源码
       - name: Checkout source code
@@ -23,24 +27,18 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 4. 配置 npm 使用 Python 和 VS 编译器
-      - name: Configure npm for node-gyp
-        run: |
-          npm config set python python3
-          npm config set msvs_version 2022
-
-      # 5. 安装依赖
+      # 4. 安装依赖
       - name: Install dependencies
         run: npm ci
 
-      # 6. 执行你的构建流程（先 build，再 build-w）
+      # 5. 执行你的构建流程（先 build，再 build-w）
       - name: Build all assets
         run: npm run build
 
       - name: Build Windows EXE
         run: npm run build-w
 
-      # 7. 上传构建产物到 GitHub Actions Artifacts
+      # 6. 上传构建产物到 GitHub Actions Artifacts
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4   # 升级到 v4，支持 Node.js 24
         with:
