@@ -7,26 +7,25 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
-    # 这里通过环境变量配置 node-gyp，代替 npm config（npm 9+ 已取消）
     env:
-      npm_config_python: python3      # 指定 Python 路径
-      npm_config_msvs_version: 2022   # 指定 Visual Studio 版本（MSVC）
+      npm_config_python: python3
+      npm_config_msvs_version: 2022
 
     steps:
       # 1. 拉取源码
       - name: Checkout source code
-        uses: actions/checkout@v4   # 升级到 v4，支持 Node.js 24
+        uses: actions/checkout@v4
 
-      # 2. 安装 Node.js 并缓存 ~/.npm（npm 缓存）
+      # 2. 安装 Node.js 并缓存 ~/.npm
       - name: Setup Node.js
-        uses: actions/setup-node@v4   # 升级到 v4
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: "npm"   # 自动缓存 npm 下载依赖
+          cache: "npm"
 
-      # 3. 安装 Python（用于 node-gyp 编译 native 模块）
+      # 3. 安装 Python（用于 node-gyp）
       - name: Setup Python
-        uses: actions/setup-python@v5   # 升级到 v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -41,6 +40,7 @@ jobs:
 
       # 5. 安装依赖（如缓存命中则跳过）
       - name: Install dependencies
+        shell: bash            # 强制用 bash 语法
         run: |
           if [ ! -d "node_modules" ]; then
             npm ci
@@ -57,7 +57,7 @@ jobs:
       - name: Build Windows EXE
         run: npm run build-w
 
-      # 8. 上传构建产物到 GitHub Actions Artifacts（改为 v4）
+      # 8. 上传构建产物
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
