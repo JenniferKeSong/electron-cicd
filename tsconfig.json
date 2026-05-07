@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["DOM", "DOM.Iterable", "ES6", "ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "declaration": false,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@/*": ["frontend/src/*"],
+      "@/components/*": ["frontend/src/components/*"],
+      "@/hooks/*": ["frontend/src/hooks/*"],
+      "@/utils/*": ["frontend/src/utils/*"],
+      "@/types/*": ["frontend/src/types/*"],
+      "@/styles/*": ["frontend/src/styles/*"],
+      "@/pages/*": ["frontend/src/pages/*"],
+      "@/api/*": ["frontend/src/api/*"],
+      "@/layout": ["frontend/src/layout/index.tsx"],
+      "@/router": ["frontend/src/router/index.ts"]
+    }
+  },
+  "include": [
+    "electron/**/*",
+    "frontend/**/*",
+    "*.ts",
+    "*.js",
+    "*.tsx",
+    "*.jsx"
+  ],
+  "exclude": ["node_modules", "dist", "public", "logs", "data", "build"]
+}

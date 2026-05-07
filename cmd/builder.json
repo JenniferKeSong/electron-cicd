@@ -1,0 +1,53 @@
+{
+  "productName": "Demo",
+  "appId": "com.electron.Demo",
+  "copyright": "© 2025 Jennifer Technology Co., Ltd.",
+  "directories": {
+    "output": "out"
+  },
+  "asar": true,
+  "files": [
+    "**/*",
+    "!cmd/",
+    "!data/",
+    "!electron/",
+    "!frontend/",
+    "!logs/",
+    "!out/",
+    "!go/",
+    "!python/"
+  ],
+  "extraResources": [
+    {
+      "from": "build/extraResources/",
+      "to": "extraResources",
+      "filter": ["**/*"]
+    }
+  ],
+  "nsis": {
+    "oneClick": false,
+    "allowElevation": true,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "build/icons/demo/icon.ico",
+    "uninstallerIcon": "build/icons/demo/icon.ico",
+    "installerHeaderIcon": "build/icons/demo/icon.ico",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Demo"
+  },
+  "publish": [
+    {
+      "provider": "generic",
+      "url": "https://github.com/wallace5303/electron-egg"
+    }
+  ],
+  "win": {
+    "icon": "build/icons/demo/icon.ico",
+    "artifactName": "Demo-${os}-${version}-${arch}.${ext}",
+    "target": [
+      {
+        "target": "nsis"
+      }
+    ]
+  }
+}

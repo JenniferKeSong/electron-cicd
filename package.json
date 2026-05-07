@@ -1,0 +1,88 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "AIPC for Demo",
+  "keywords": [
+    "AIPC",
+    "Demo"
+  ],
+  "repository": "",
+  "license": "Apache-2.0",
+  "author": "Jennifer Song",
+  "main": "./public/electron/main.js",
+  "scripts": {
+    "build": "npm run build-frontend && npm run build-electron && ee-bin encrypt",
+    "build-electron": "ee-bin build --cmds=electron",
+    "build-frontend": "ee-bin build --cmds=frontend && ee-bin move --flag=frontend_dist",
+    "build-go-l": "ee-bin move --flag=go_static,go_config,go_package,go_images && ee-bin build --cmds=go_l",
+    "build-go-m": "ee-bin move --flag=go_static,go_config,go_package,go_images && ee-bin build --cmds=go_m",
+    "build-go-w": "ee-bin move --flag=go_static,go_config,go_package && ee-bin build --cmds=go_w",
+    "build-l": "ee-bin build --cmds=linux",
+    "build-m": "cross-env BUILD_DATE=$(date +%Y%m%d%H%M) ee-bin build --cmds=mac",
+    "build-m-arm64": "ee-bin build --cmds=mac_arm64",
+    "build-python": "ee-bin build --cmds=python && ee-bin move --flag=python_dist",
+    "build-w": "ee-bin build --cmds=win64",
+    "build-we": "ee-bin build --cmds=win_e",
+    "debug-dev": "cross-env DEBUG=ee-* ee-bin dev",
+    "debug-electron": "cross-env DEBUG=ee-* ee-bin dev --serve=electron",
+    "debug-encrypt": "ee-bin encrypt",
+    "debug-move": "ee-bin move --flag=frontend_dist",
+    "dev": "ee-bin dev",
+    "dev-electron": "ee-bin dev --serve=electron",
+    "dev-frontend": "ee-bin dev --serve=frontend",
+    "dev-go": "ee-bin exec --cmds=go",
+    "dev-go-w": "ee-bin exec --cmds=go_w",
+    "dev-python": "ee-bin exec --cmds=python",
+    "encrypt": "ee-bin encrypt",
+    "icon": "ee-bin icon -i ./public/images/demo/logo.png -o ./build/icons/demo",
+    "icon:asus": "ee-bin icon -i ./public/images/asus/logo.png -o ./build/icons/asus",
+    "re-sqlite": "electron-rebuild -f -w better-sqlite3",
+    "start": "ee-bin start"
+  },
+  "overrides": {
+    "node-gyp": "^12.3.0"
+  },
+  "dependencies": {
+    "axios": "^1.13.5",
+    "ee-core": "^4.1.5",
+    "fs-extra": "^11.3.0",
+    "uiohook-napi": "^1.5.5",
+    "winreg": "^1.2.5"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
+    "@eslint/js": "^9.39.1",
+    "@types/electron": "^1.6.12",
+    "@types/node": "^20.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "cross-env": "^10.1.0",
+    "debug": "^4.4.0",
+    "ee-bin": "^4.1.10",
+    "electron": "^32.3.3",
+    "electron-builder": "^25.1.8",
+    "electron-rebuild": "^3.2.9",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^16.5.0",
+    "icon-gen": "^5.0.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-packagejson": "^2.5.16",
+    "prettier-plugin-tailwindcss": "^0.6.13",
+    "rimraf": "^6.1.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.18.0",
+    "npm": ">=9.0.0"
+  },
+  "build": {
+    "appId": "com.electron.Demo",
+    "productName": "Demo"
+  }
+}
