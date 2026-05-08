@@ -1,7 +1,7 @@
 name: Manual Build Windows EXE
 
 on:
-  workflow_dispatch:   # 只手动触发构建
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -10,18 +10,21 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
+      # 🔥 关键：强制使用预编译二进制，禁止编译 sharp + uiohook
+      npm_config_build_from_source: false
+      # 🔥 强制 sharp 使用预编译，不编译
+      SHARP_IGNORE_GLOBAL_LIBVIPS: true
       # 镜像加速
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20  # 🔥 必须升到 20，解决依赖报错
           cache: "npm"
 
       - name: Setup Python
@@ -29,32 +32,23 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 🔥 只缓存原生模块（不会破坏 sharp，不会报权限错）
-      - name: Cache native modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules/uiohook-napi/build
-            node_modules/uiohook-napi/prebuilds
-          key: ${{ runner.os }}-native-${{ hashFiles('package-lock.json') }}-x64
+      # 清理可能损坏的模块
+      - name: Clean install
+        run: |
+          rm -rf node_modules
+          npm ci
 
-      # 安装依赖（删除了危险的判断逻辑，避免权限错误）
-      - name: Install dependencies
-        run: npm ci
-
-      # 编译原生模块（只会编译 uiohook-napi，缓存命中瞬间完成）
-      - name: Prebuild native modules for Windows
+      # 🔥 这一步现在只会用预编译，不编译任何 C++ 代码，10 秒内完成
+      - name: Rebuild native deps
         run: npx electron-builder install-app-deps --arch x64
 
-      # 构建
-      - name: Build all assets
+      - name: Build
         run: npm run build
 
-      - name: Build Windows EXE
+      - name: Build EXE
         run: npm run build-w
 
-      # 上传产物
-      - name: Upload Windows EXE
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
