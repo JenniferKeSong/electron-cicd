@@ -8,33 +8,36 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      # 🔥 强制使用预编译，不编译源码（核心加速）
-      npm_config_build_from_source: false
-      npm_config_loglevel: error
+      # 🔥 只留这个，禁止全局编译，不影响任何模块
       CI: true
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 🔥 已改为 Node 22
-      - name: Setup Node.js
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
 
-      - name: Setup Python
+      - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: npm ci
+      # ####################################################################
+      # 🔥 🔥 🔥 核心：安装时 禁止编译 sharp！！！
+      # ####################################################################
+      - name: Install dependencies (NO SHARP BUILD)
+        run: |
+          npm ci --ignore-scripts
 
-      # 🔥 正常使用，不报错，速度极快
-      - name: Prebuild native modules
-        run: npx --yes electron-builder install-app-deps --arch x64
+      # ####################################################################
+      # 🔥 只编译 uiohook-napi，完全不碰 sharp
+      # ####################################################################
+      - name: ONLY build uiohook-napi (super fast)
+        run: |
+          npx --yes node-gyp rebuild --directory=node_modules/uiohook-napi --arch=x64
 
       - name: Build all assets
         run: npm run build
@@ -42,7 +45,7 @@ jobs:
       - name: Build Windows EXE
         run: npm run build-w
 
-      - name: Upload Windows EXE
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
