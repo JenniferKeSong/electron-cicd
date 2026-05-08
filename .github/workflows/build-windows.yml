@@ -8,8 +8,6 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      # 🔥 强制 uiohook-napi 使用预编译，永远不编译
-      npm_config_uiohook_napi_use_prebuild: true
       CI: true
 
     steps:
@@ -21,37 +19,26 @@ jobs:
           node-version: 22
           cache: "npm"
 
-      - name: Setup Python
+      - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      # ####################################################################
-      # 🔥 缓存 electron-builder 自己编译的 uiohook-napi（最关键！）
-      # ####################################################################
-      - name: Cache uiohook-napi build
-        uses: actions/cache@v4
-        with:
-          path: node_modules/uiohook-napi
-          key: ${{ runner.os }}-uiohook-final-${{ hashFiles('package-lock.json') }}
+      # 安装 C++ 构建工具（必须！uiohook-napi 编译需要）
+      - name: Install Visual C++ Build Tools
+        uses: ilammy/msvc-dev-cmd@v1
 
-      # 正常安装
+      # 安装依赖 → 自动编译 uiohook-napi
       - name: Install dependencies
         run: npm ci
 
-      # ####################################################################
-      # 🔥 不手动编译！完全交给 electron-builder 自己处理
-      # ####################################################################
-
-      - name: Build
-        run: npm run build
-
-      # 这里第一次会编译一次，第二次缓存命中 = 瞬间完成！
+      # 打包 Windows
       - name: Build Windows EXE
         run: npm run build-w
 
-      - name: Upload
+      # 上传最终 exe
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: out/**
+          path: dist/*.exe
