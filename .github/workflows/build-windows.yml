@@ -10,69 +10,50 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      # 🔥 强制使用预编译二进制，跳过 uiohook-napi 源码编译
-      npm_config_build_from_source: false
       # 镜像加速
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
     steps:
-      # 1. 拉取源码
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # 2. 安装 Node.js 并缓存 ~/.npm
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "npm"
 
-      # 3. 安装 Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 4. 🔥 优化缓存：专门缓存原生模块编译产物（uiohook-napi）
+      # 🔥 只缓存原生模块（不会破坏 sharp，不会报权限错）
       - name: Cache native modules
         uses: actions/cache@v4
         with:
           path: |
-            node_modules/.cache
             node_modules/uiohook-napi/build
             node_modules/uiohook-napi/prebuilds
           key: ${{ runner.os }}-native-${{ hashFiles('package-lock.json') }}-x64
 
-      # 5. 缓存整个 node_modules
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      # 6. 安装依赖
+      # 安装依赖（删除了危险的判断逻辑，避免权限错误）
       - name: Install dependencies
-        shell: bash
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+        run: npm ci
 
-      # 7. 预编译 native 模块（缓存命中瞬间完成）
+      # 编译原生模块（只会编译 uiohook-napi，缓存命中瞬间完成）
       - name: Prebuild native modules for Windows
         run: npx electron-builder install-app-deps --arch x64
 
-      # 8. 构建
+      # 构建
       - name: Build all assets
         run: npm run build
 
       - name: Build Windows EXE
         run: npm run build-w
 
-      # 9. 上传产物
+      # 上传产物
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
