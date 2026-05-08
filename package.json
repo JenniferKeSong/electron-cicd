@@ -83,6 +83,11 @@
   },
   "build": {
     "appId": "com.electron.Demo",
-    "productName": "Demo"
+    "productName": "Demo",
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": true,
+    "win": {
+      "target": "nsis"
+    }
   }
 }
