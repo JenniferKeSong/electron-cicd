@@ -6,37 +6,27 @@ jobs:
   build-windows:
     runs-on: windows-2022
     env:
-      npm_config_python: python3
-      npm_config_msvs_version: 2022
       CI: true
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js 22
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: "npm"
 
-      - name: Setup Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+      # 🔥 关键：先编译好原生模块（解决卡死）
+      - name: Install & compile native modules
+        run: |
+          npm install
+          npx electron-rebuild -f -w uiohook-napi
 
-      # 安装 C++ 构建工具（必须！uiohook-napi 编译需要）
-      - name: Install Visual C++ Build Tools
-        uses: ilammy/msvc-dev-cmd@v1
-
-      # 安装依赖 → 自动编译 uiohook-napi
-      - name: Install dependencies
-        run: npm ci
-
-      # 打包 Windows
+      # 🔥 直接打包，不再重新编译！
       - name: Build Windows EXE
         run: npm run build-w
 
-      # 上传最终 exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
