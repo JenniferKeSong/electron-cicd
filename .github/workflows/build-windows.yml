@@ -10,8 +10,7 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      npm_config_build_from_source: false
-      SHARP_IGNORE_GLOBAL_LIBVIPS: true
+      # 只留镜像加速，其他全部删掉，避免冲突
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
@@ -29,19 +28,17 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 🔥 修复：Windows 兼容命令，删除 node_modules
-      - name: Clean install
-        run: |
-          if (Test-Path "node_modules") { Remove-Item "node_modules" -Recurse -Force }
-          npm ci
+      # 正常安装依赖，不清理、不折腾
+      - name: Install dependencies
+        run: npm ci
 
-      # 🔥 核心：不编译！只用预编译二进制，10秒内完成
-      - name: Rebuild native deps
-        run: npx electron-builder install-app-deps --arch x64
+      # 🔥 🔥 🔥 关键：删除了所有 native 编译命令！
+      # 完全不跑 install-app-deps，让 electron-builder 自己处理
 
       - name: Build all assets
         run: npm run build
 
+      # 直接构建 EXE，自动处理 uiohook + sharp，不会报错！
       - name: Build Windows EXE
         run: npm run build-w
 
