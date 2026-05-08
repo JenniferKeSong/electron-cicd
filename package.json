@@ -85,7 +85,7 @@
     "appId": "com.electron.Demo",
     "productName": "Demo",
     "nodeGypRebuild": false,
-    "buildDependenciesFromSource": true,
+    "buildDependenciesFromSource": false,
     "win": {
       "target": "nsis"
     }
