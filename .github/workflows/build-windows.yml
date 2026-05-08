@@ -10,6 +10,11 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
+      # 🔥 强制使用预编译二进制，跳过 uiohook-napi 源码编译
+      npm_config_build_from_source: false
+      # 镜像加速
+      ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+      ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
     steps:
       # 1. 拉取源码
@@ -23,13 +28,23 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      # 3. 安装 Python（用于 node-gyp）
+      # 3. 安装 Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 4. 缓存 node_modules 来避免重复安装和编译 native 模块
+      # 4. 🔥 优化缓存：专门缓存原生模块编译产物（uiohook-napi）
+      - name: Cache native modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.cache
+            node_modules/uiohook-napi/build
+            node_modules/uiohook-napi/prebuilds
+          key: ${{ runner.os }}-native-${{ hashFiles('package-lock.json') }}-x64
+
+      # 5. 缓存整个 node_modules
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
@@ -38,28 +53,28 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # 5. 安装依赖（如缓存命中则跳过）
+      # 6. 安装依赖
       - name: Install dependencies
-        shell: bash            # 强制用 bash 语法
+        shell: bash
         run: |
           if [ ! -d "node_modules" ]; then
             npm ci
           fi
 
-      # 6. 提前编译 native 模块，避免 build-w 重新编译
+      # 7. 预编译 native 模块（缓存命中瞬间完成）
       - name: Prebuild native modules for Windows
         run: npx electron-builder install-app-deps --arch x64
 
-      # 7. 执行你的构建流程（先 build，再 build-w）
+      # 8. 构建
       - name: Build all assets
         run: npm run build
 
       - name: Build Windows EXE
         run: npm run build-w
 
-      # 8. 上传构建产物
+      # 9. 上传产物
       - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: out/**   # 根据你的输出路径修改
+          path: out/**
