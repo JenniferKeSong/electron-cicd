@@ -1,18 +1,19 @@
 name: Manual Build Windows EXE
-
 on:
   workflow_dispatch:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
-
+    runs-on: windows-2022  # 更快的 Windows
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      # 只留镜像加速，其他全部删掉，避免冲突
-      ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-      ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+      # 🔥 强制 uiohook-napi 使用预编译（核心加速）
+      npm_config_uiohook_napi_prebuild: true
+      npm_config_arch: x64
+      # 🔥 关闭冗余日志，进一步加速
+      npm_config_loglevel: error
+      CI: true
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
           cache: "npm"
 
       - name: Setup Python
@@ -28,21 +29,20 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 正常安装依赖，不清理、不折腾
       - name: Install dependencies
         run: npm ci
 
-      # 🔥 🔥 🔥 关键：删除了所有 native 编译命令！
-      # 完全不跑 install-app-deps，让 electron-builder 自己处理
+      # 🔥 只编译 uiohook-napi，跳过所有其他原生模块
+      - name: Fast rebuild uiohook-napi
+        run: npx electron-rebuild -f -w uiohook-napi --arch x64
 
-      - name: Build all assets
+      - name: Build
         run: npm run build
 
-      # 直接构建 EXE，自动处理 uiohook + sharp，不会报错！
-      - name: Build Windows EXE
+      - name: Build EXE
         run: npm run build-w
 
-      - name: Upload Windows EXE
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
