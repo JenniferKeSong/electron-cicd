@@ -16,21 +16,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 🔥 提前编译 uiohook-napi，绝对不卡
-      - name: Rebuild native module
+      # 提前编译原生模块，不卡住
+      - name: Rebuild uiohook-napi
         run: npx @electron/rebuild -f -w uiohook-napi
 
-      # 🔥 执行打包
+      # 🔥 先看当前目录有什么
+      - name: List current folder
+        run: dir
+
+      # 执行打包
       - name: Build Windows
         run: npm run build-w
 
-      # 🔥 列出所有打包结果（你能在日志里看到exe在哪）
-      - name: Show all output files
-        run: Get-ChildItem -Recurse -Path "out/**/*.exe"
+      # 🔥 全局搜索所有 exe（不管在哪个文件夹都能找到）
+      - name: Find ALL exe files
+        run: Get-ChildItem -Recurse -Filter *.exe
 
-      # 🔥 上传产物（你一定能在页面底部看到下载按钮）
-      - name: Upload EXE
+      # 🔥 自动上传所有找到的 exe（最稳）
+      - name: Upload all EXE files
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: out/**/*.exe
+          path: '**/*.exe'
