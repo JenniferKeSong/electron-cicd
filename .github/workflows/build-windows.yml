@@ -5,9 +5,6 @@ on:
 jobs:
   build-windows:
     runs-on: windows-2022
-    env:
-      CI: true
-
     steps:
       - uses: actions/checkout@v4
 
@@ -15,20 +12,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
 
-      # 🔥 关键：先编译好原生模块（解决卡死）
-      - name: Install & compile native modules
-        run: |
-          npm install
-          npx electron-rebuild -f -w uiohook-napi
+      - name: Install dependencies
+        run: npm install
 
-      # 🔥 直接打包，不再重新编译！
-      - name: Build Windows EXE
+      # 🔥 提前编译 uiohook-napi，绝对不卡
+      - name: Rebuild native module
+        run: npx @electron/rebuild -f -w uiohook-napi
+
+      # 🔥 执行打包
+      - name: Build Windows
         run: npm run build-w
 
-      - name: Upload artifact
+      # 🔥 列出所有打包结果（你能在日志里看到exe在哪）
+      - name: Show all output files
+        run: Get-ChildItem -Recurse -Path "out/**/*.exe"
+
+      # 🔥 上传产物（你一定能在页面底部看到下载按钮）
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: dist/*.exe
+          path: out/**/*.exe
