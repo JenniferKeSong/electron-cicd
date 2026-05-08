@@ -4,7 +4,8 @@
   "main": "electron/main.js", 
   "copyright": "© 2025 Jennifer Technology Co., Ltd.",
   "directories": {
-    "output": "out"
+    "output": "out",
+    "app": "."
   },
   "asar": true,
   "files": [
