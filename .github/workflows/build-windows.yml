@@ -4,24 +4,24 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-2022  # 更快的 Windows
+    runs-on: windows-2022
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      # 🔥 强制 uiohook-napi 使用预编译（核心加速）
-      npm_config_uiohook_napi_prebuild: true
-      npm_config_arch: x64
-      # 🔥 关闭冗余日志，进一步加速
+      # 🔥 强制使用预编译，不编译源码（核心加速）
+      npm_config_build_from_source: false
       npm_config_loglevel: error
       CI: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
+      # 🔥 已改为 Node 22
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: "npm"
 
       - name: Setup Python
@@ -32,17 +32,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 🔥 只编译 uiohook-napi，跳过所有其他原生模块
-      - name: Fast rebuild uiohook-napi
-        run: npx electron-rebuild -f -w uiohook-napi --arch x64
+      # 🔥 正常使用，不报错，速度极快
+      - name: Prebuild native modules
+        run: npx --yes electron-builder install-app-deps --arch x64
 
-      - name: Build
+      - name: Build all assets
         run: npm run build
 
-      - name: Build EXE
+      - name: Build Windows EXE
         run: npm run build-w
 
-      - name: Upload
+      - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
