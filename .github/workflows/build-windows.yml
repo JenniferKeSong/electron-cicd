@@ -10,11 +10,8 @@ jobs:
     env:
       npm_config_python: python3
       npm_config_msvs_version: 2022
-      # 🔥 关键：强制使用预编译二进制，禁止编译 sharp + uiohook
       npm_config_build_from_source: false
-      # 🔥 强制 sharp 使用预编译，不编译
       SHARP_IGNORE_GLOBAL_LIBVIPS: true
-      # 镜像加速
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
@@ -24,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20  # 🔥 必须升到 20，解决依赖报错
+          node-version: 20
           cache: "npm"
 
       - name: Setup Python
@@ -32,23 +29,23 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 清理可能损坏的模块
+      # 🔥 修复：Windows 兼容命令，删除 node_modules
       - name: Clean install
         run: |
-          rm -rf node_modules
+          if (Test-Path "node_modules") { Remove-Item "node_modules" -Recurse -Force }
           npm ci
 
-      # 🔥 这一步现在只会用预编译，不编译任何 C++ 代码，10 秒内完成
+      # 🔥 核心：不编译！只用预编译二进制，10秒内完成
       - name: Rebuild native deps
         run: npx electron-builder install-app-deps --arch x64
 
-      - name: Build
+      - name: Build all assets
         run: npm run build
 
-      - name: Build EXE
+      - name: Build Windows EXE
         run: npm run build-w
 
-      - name: Upload
+      - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
