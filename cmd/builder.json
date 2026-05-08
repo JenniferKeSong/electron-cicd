@@ -1,6 +1,7 @@
 {
   "productName": "Demo",
   "appId": "com.electron.Demo",
+  "main": "electron/main.js", 
   "copyright": "© 2025 Jennifer Technology Co., Ltd.",
   "directories": {
     "output": "out"
